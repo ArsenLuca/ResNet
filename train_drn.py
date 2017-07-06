@@ -60,7 +60,7 @@ def main():
     begin_epoch = args.model_load_epoch if args.model_load_epoch else 0
     if not os.path.exists("./model"):
         os.mkdir("./model")
-    model_prefix = "model/resnet-{}-{}-{}".format(args.data_type, args.depth, kv.rank)
+    model_prefix = "model/drn-{}-{}-{}".format(args.data_type, args.depth, kv.rank)
     checkpoint = mx.callback.do_checkpoint(model_prefix)
     arg_params = None
     aux_params = None
