@@ -155,7 +155,7 @@ def drn(units, num_stage, filter_list, num_class, data_type, bottle_neck=True, b
     else:
          raise ValueError("do not support {} yet".format(data_type))
     for i in range(num_stage-2):
-        body = drn_unit(body, filter_list[i+1], (1 if i==0 else 2, 1 if i==0 else 2), False,
+        body = residual_unit(body, filter_list[i+1], (1 if i==0 else 2, 1 if i==0 else 2), False,
                              name='stage%d_unit%d' % (i + 1, 1), bottle_neck=bottle_neck, workspace=workspace,
                              memonger=memonger)
         for j in range(units[i]-1):

@@ -96,7 +96,7 @@ def main():
         part_index          = kv.rank)
     val = mx.io.ImageRecordIter(
         path_imgrec         = os.path.join(args.data_dir, "val.rec") if args.data_type == 'cifar10' else
-                              os.path.join(args.data_dir, "val_256_q90.rec"),
+                              os.path.join(args.data_dir, "val_256_q90.1000.rec"),
         label_width         = 1,
         data_name           = 'data',
         label_name          = 'softmax_label',
