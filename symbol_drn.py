@@ -164,11 +164,11 @@ def drn(units, num_stage, filter_list, num_class, data_type, bottle_neck=True, b
 
     stage_dilated = [(2, 2), (4, 4)]
     for i in range(num_stage-2, num_stage):
-        body = drn_unit(body, filter_list[i+1], stage_dilated[i==3], (1 if i==0 else 2, 1 if i==0 else 2), False,
+        body = drn_unit(body, filter_list[i+1], map(lambda x:0.5*x, stage_dilated[i==3]), (1, 1), False,
                              name='stage%d_unit%d' % (i + 1, 1), bottle_neck=bottle_neck, workspace=workspace,
                              memonger=memonger)
         for j in range(units[i]-1):
-            body = residual_unit(body, filter_list[i+1], (1,1), True, name='stage%d_unit%d' % (i + 1, j + 2),
+            body = drn_unit(body, filter_list[i+1], stage_dilated[i==3], (1,1), True, name='stage%d_unit%d' % (i + 1, j + 2),
                                  bottle_neck=bottle_neck, workspace=workspace, memonger=memonger)
 
     bn1 = mx.sym.BatchNorm(data=body, fix_gamma=False, eps=2e-5, momentum=bn_mom, name='bn1')
