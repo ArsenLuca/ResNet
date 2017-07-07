@@ -27,7 +27,7 @@ def main():
         else:
             raise ValueError("no experiments done on detph {}, you can do it youself".format(args.depth))
         units = per_unit*3
-        symbol = drn(units=units, num_stage=3, filter_list=filter_list, num_class=args.num_classes,
+        symbol = drn_resnext(units=units, num_stage=3, filter_list=filter_list, num_class=args.num_classes,
                         data_type="cifar10", bottle_neck = bottle_neck, bn_mom=args.bn_mom, workspace=args.workspace,
                         memonger=args.memonger)
     elif args.data_type == "imagenet":
