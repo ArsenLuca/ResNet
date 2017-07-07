@@ -27,7 +27,7 @@ def main():
         else:
             raise ValueError("no experiments done on detph {}, you can do it youself".format(args.depth))
         units = per_unit*3
-        symbol = drn_resnext(units=units, num_stage=3, filter_list=filter_list, num_class=args.num_classes,
+        symbol = drn_resnext(units=units, num_stage=3, filter_list=filter_list, num_class=args.num_classes,num_group=args.num_groupes,
                         data_type="cifar10", bottle_neck = bottle_neck, bn_mom=args.bn_mom, workspace=args.workspace,
                         memonger=args.memonger)
     elif args.data_type == "imagenet":
@@ -150,6 +150,7 @@ if __name__ == "__main__":
                         ' memory is oom, then you can try smaller vale, such as --workspace 256')
     parser.add_argument('--depth', type=int, default=50, help='the depth of resnet')
     parser.add_argument('--num-classes', type=int, default=1000, help='the class number of your task')
+    parser.add_argument('--num-groupes', type=int, default=32, help='the number of groups')
     parser.add_argument('--aug-level', type=int, default=2, choices=[1, 2, 3],
                         help='level 1: use only random crop and random mirror\n'
                              'level 2: add scale/aspect/hsv augmentation based on level 1\n'
