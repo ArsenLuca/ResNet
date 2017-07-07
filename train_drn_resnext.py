@@ -48,8 +48,8 @@ def main():
             units = [3, 30, 48, 8]
         else:
             raise ValueError("no experiments done on detph {}, you can do it youself".format(args.depth))
-        symbol = drn(units=units, num_stage=4, filter_list=[64, 256, 512, 1024, 2048] if args.depth >=50
-                        else [64, 64, 128, 256, 512], num_class=args.num_classes, data_type="imagenet", bottle_neck = True
+        symbol = drn_resnext(units=units, num_stage=4, filter_list=[64, 256, 512, 1024, 2048] if args.depth >=50
+                        else [64, 64, 128, 256, 512], num_class=args.num_classes, num_group=args.num_groupes, bottle_neck = True
                         if args.depth >= 50 else False, bn_mom=args.bn_mom, workspace=args.workspace,
                         memonger=args.memonger)
     else:

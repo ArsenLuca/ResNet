@@ -153,7 +153,7 @@ def residual_unit(data, num_filter, stride, dim_match, name, bottle_neck=True, n
         eltwise = bn2 + shortcut
         return mx.sym.Activation(data=eltwise, act_type='relu', name=name + '_relu')
 
-def drn_resnext(units, num_stages, filter_list, num_classes, num_group, bottle_neck=True, bn_mom=0.9, workspace=256, memonger=False):
+def drn_resnext(units, num_stage, filter_list, num_class, num_group, bottle_neck=True, bn_mom=0.9, workspace=256, memonger=False):
     """Return ResNeXt symbol of
     Parameters
     ----------
@@ -173,7 +173,7 @@ def drn_resnext(units, num_stages, filter_list, num_classes, num_group, bottle_n
         Workspace used in convolution operator
     """
     num_unit = len(units)
-    assert(num_unit == num_stages)
+    assert(num_unit == num_stage)
     data = mx.sym.Variable(name='data')
     data = mx.sym.BatchNorm(data=data, fix_gamma=True, eps=2e-5, momentum=bn_mom, name='bn_data')
 
@@ -184,7 +184,7 @@ def drn_resnext(units, num_stages, filter_list, num_classes, num_group, bottle_n
     body = mx.sym.Activation(data=body, act_type='relu', name='relu0')
     body = mx.symbol.Pooling(data=body, kernel=(3, 3), stride=(2,2), pad=(1,1), pool_type='max')
 
-    for i in range(num_stages-2):
+    for i in range(num_stage-2):
         body = residual_unit(body, filter_list[i+1], (1 if i==0 else 2, 1 if i==0 else 2), False,
                              name='stage%d_unit%d' % (i + 1, 1), bottle_neck=bottle_neck, num_group=num_group, 
                              bn_mom=bn_mom, workspace=workspace, memonger=memonger)
@@ -193,7 +193,7 @@ def drn_resnext(units, num_stages, filter_list, num_classes, num_group, bottle_n
                                  bottle_neck=bottle_neck, num_group=num_group, bn_mom=bn_mom, workspace=workspace, memonger=memonger)
 
     stage_dilated = [(2, 2), (4, 4)]
-    for i in range(num_stages-2, num_stages):
+    for i in range(num_stage-2, num_stage):
         body = drn_unit(body, filter_list[i+1], tuple(map(lambda x:x/2, stage_dilated[i==3])), (1,1), False,
                              name='stage%d_unit%d' % (i + 1, 1), bottle_neck=bottle_neck, num_group=num_group, 
                              bn_mom=bn_mom, workspace=workspace, memonger=memonger)
@@ -203,7 +203,7 @@ def drn_resnext(units, num_stages, filter_list, num_classes, num_group, bottle_n
 
     pool1 = mx.symbol.Pooling(data=body, global_pool=True, kernel=(7, 7), pool_type='avg', name='pool1')
     flat = mx.symbol.Flatten(data=pool1)
-    fc1 = mx.symbol.FullyConnected(data=flat, num_hidden=num_classes, name='fc1')
+    fc1 = mx.symbol.FullyConnected(data=flat, num_hidden=num_class, name='fc1')
     return mx.symbol.SoftmaxOutput(data=fc1, name='softmax')
 
 def get_symbol(num_classes, num_layers, image_shape, num_group=32, conv_workspace=256, **kwargs):
