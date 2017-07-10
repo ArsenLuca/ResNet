@@ -225,7 +225,7 @@ def drn_c(units, num_stage, filter_list, num_class, data_type, bottle_neck=True,
 
     # end stages appended, using stacked conv unit
     for e in range(num_stage, num_stage+2):
-        body = stacked_conv_unit(body, filter_list[-1], (1, 1), False, name='stage%d_unit%d' % (e + 1, 1), 
+        body = stacked_conv_unit(body, filter_list[-1], (1, 1), name='stage%d_unit%d' % (e + 1, 1), 
                             bottle_neck=bottle_neck, workspace=workspace, memonger=memonger)
 
     bn1 = mx.sym.BatchNorm(data=body, fix_gamma=False, eps=2e-5, momentum=bn_mom, name='bn1')
