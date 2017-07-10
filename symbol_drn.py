@@ -63,7 +63,7 @@ def residual_unit(data, num_filter, stride, dim_match, name, bottle_neck=True, b
             shortcut._set_attr(mirror_stage='True')
         return conv2 + shortcut
 
-def drn_unit(data, num_filter, dilate, stride, dim_match, name, bottle_neck=True, bn_mom=0.9, workspace=512, memonger=False):
+def drn_unit(data, num_filter, dilate, first_unit, stride, dim_match, name, bottle_neck=True, bn_mom=0.9, workspace=512, memonger=False):
     """Return ResNet Unit symbol for building ResNet
     Parameters
     ----------
@@ -107,12 +107,12 @@ def drn_unit(data, num_filter, dilate, stride, dim_match, name, bottle_neck=True
     else:
         bn1 = mx.sym.BatchNorm(data=data, fix_gamma=False, momentum=bn_mom, eps=2e-5, name=name + '_bn1')
         act1 = mx.sym.Activation(data=bn1, act_type='relu', name=name + '_relu1')
-        conv1 = mx.sym.Convolution(data=act1, num_filter=num_filter, kernel=(3,3), stride=stride, pad=dilate,
-                                      no_bias=True, workspace=workspace, name=name + '_conv1', dilate=dilate)
+        conv1 = mx.sym.Convolution(data=act1, num_filter=num_filter, kernel=(3,3), stride=stride, pad=tuple(map(lambda x:x/2), dilate) if first_unit else dilate,
+                                      no_bias=True, workspace=workspace, name=name + '_conv1', dilate=tuple(map(lambda x:x/2), dilate) if first_unit else dilate)
         bn2 = mx.sym.BatchNorm(data=conv1, fix_gamma=False, momentum=bn_mom, eps=2e-5, name=name + '_bn2')
         act2 = mx.sym.Activation(data=bn2, act_type='relu', name=name + '_relu2')
-        conv2 = mx.sym.Convolution(data=act2, num_filter=num_filter, kernel=(3,3), stride=(1,1), pad=(1,1),
-                                      no_bias=True, workspace=workspace, name=name + '_conv2')
+        conv2 = mx.sym.Convolution(data=act2, num_filter=num_filter, kernel=(3,3), stride=(1,1), pad=dilate,
+                                      no_bias=True, workspace=workspace, name=name + '_conv2',dilate=dilate)
         if dim_match:
             shortcut = data
         else:
@@ -164,11 +164,11 @@ def drn(units, num_stage, filter_list, num_class, data_type, bottle_neck=True, b
 
     stage_dilated = [(2, 2), (4, 4)]
     for i in range(num_stage-2, num_stage):
-        body = drn_unit(body, filter_list[i+1], tuple(map(lambda x:x/2, stage_dilated[i==3])), (1, 1), False,
+        body = drn_unit(body, filter_list[i+1], stage_dilated[i==3], True, (1, 1), False,
                              name='stage%d_unit%d' % (i + 1, 1), bottle_neck=bottle_neck, workspace=workspace,
                              memonger=memonger)
         for j in range(units[i]-1):
-            body = drn_unit(body, filter_list[i+1], stage_dilated[i==3], (1,1), True, name='stage%d_unit%d' % (i + 1, j + 2),
+            body = drn_unit(body, filter_list[i+1], stage_dilated[i==3], False, (1,1), True, name='stage%d_unit%d' % (i + 1, j + 2),
                                  bottle_neck=bottle_neck, workspace=workspace, memonger=memonger)
 
     bn1 = mx.sym.BatchNorm(data=body, fix_gamma=False, eps=2e-5, momentum=bn_mom, name='bn1')
