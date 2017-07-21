@@ -6,7 +6,23 @@ import mxnet as mx
 
 from ..operators.op_channelshuffle import *
 
-def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom=0.9, workspace=512, memonger=False):
+def depthwise_conv(data, num_filter, kernel, stride, pad, no_bias, workspace, name, method=0):
+    """ depthwise conv """
+    if method==0:
+        conv2 = mx.sym.Convolution(data=data, num_filter=num_filter, num_group=num_filter, kernel=kernel, stride=stride, pad=pad,
+                                        no_bias=no_bias, workspace=workspace, name=name)
+    else:
+        sc1_channels = mx.sym.SliceChannel(data=data, axis=1, num_outputs=num_filter)
+        dw_outs = [mx.sym.Convolution(data=sc1_channels[i], num_filter=1, pad=pad, kernel=kernel, stride=stride, 
+             no_bias=True, workspace=workspace, name=name+'_conv2_depthwise_kernel'+str(i)) for i in range(num_filter)]
+
+        conv2 = mx.sym.Concat(*dw_outs)
+
+    return conv2
+    
+    
+
+def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom=0.9, workspace=512, memonger):
     """Return Shufflenet Unit symbol for building ResNet
     Parameters
     ----------
@@ -43,11 +59,15 @@ def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom
     #                                 no_bias=True, workspace=workspace, name=name + '_conv2')
 
     # Depthwise Conv, method 2: using channel slice
-    sc1_channels = mx.sym.SliceChannel(data=act2, axis=1, num_outputs=int(num_filter*0.25))
-    dw_outs = [mx.sym.Convolution(data=sc1_channels[i], num_filter=1, pad=(1, 1), kernel=(3, 3), stride=stride, 
-             no_bias=True, workspace=workspace, name=name+'_conv2_depthwise_kernel'+str(i)) for i in range(int(num_filter*0.25))]
+    # sc1_channels = mx.sym.SliceChannel(data=act2, axis=1, num_outputs=int(num_filter*0.25))
+    # dw_outs = [mx.sym.Convolution(data=sc1_channels[i], num_filter=1, pad=(1, 1), kernel=(3, 3), stride=stride, 
+    #          no_bias=True, workspace=workspace, name=name+'_conv2_depthwise_kernel'+str(i)) for i in range(int(num_filter*0.25))]
 
-    conv2 = mx.sym.Concat(*dw_outs)   
+    # conv2 = mx.sym.Concat(*dw_outs)
+
+    conv2 = depthwise_conv(data=act2, num_filter=int(num_filter*0.25), kernel=(3, 3), 
+                    stride=stride, pad=(1, 1), no_bias=True, workspace=workspace, name=name, method=0)
+
     # 
     bn3 = mx.sym.BatchNorm(data=conv2, fix_gamma=False, eps=2e-5, momentum=bn_mom, name=name + '_bn3')
     act3 = mx.sym.Activation(data=bn3, act_type='relu', name=name + '_relu3')
