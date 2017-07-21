@@ -32,7 +32,7 @@ def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom
                                     no_bias=True, workspace=workspace, name=name + '_conv1')
 
     # shuffle channels
-    sc1 = mx.symbol.Custom(data=conv1, name='softmax', op_type='shufflechannel', num_group=num_group)
+    sc1 = mx.symbol.Custom(data=conv1, name='shufflechannel', op_type='shufflechannel', num_group=num_group)
 
     bn2 = mx.sym.BatchNorm(data=sc1, fix_gamma=False, eps=2e-5, momentum=bn_mom, name=name + '_bn2')
     act2 = mx.sym.Activation(data=bn2, act_type='relu', name=name + '_relu2')

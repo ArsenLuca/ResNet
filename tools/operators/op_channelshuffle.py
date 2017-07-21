@@ -15,7 +15,7 @@ class ShuffleChannel(mx.operator.CustomOp):
 
     def __init__(self, num_group):
         super(ShuffleChannel, self).__init__()
-        self._num_group = num_group
+        self._num_group = int(num_group)
 
     def forward(self, is_train, req, in_data, out_data, aux):
         """ forward computation """
@@ -26,7 +26,7 @@ class ShuffleChannel(mx.operator.CustomOp):
         n = input_shape[1] / self._num_group
 
         reshaped_data = input_data.reshape((input_shape[0], self._num_group, n, input_shape[-2], input_shape[-1]))
-        transposed_reshaped_data = transpose(reshaped_data, axes=(0, 2, 1, 3, 4))
+        transposed_reshaped_data = mx.nd.transpose(reshaped_data, axes=(0, 2, 1, 3, 4))
         shuffled_data = transposed_reshaped_data.reshape(input_shape)
 
         self.assign(out_data[0], req[0], shuffled_data)
@@ -39,7 +39,7 @@ class ShuffleChannel(mx.operator.CustomOp):
         n = input_shape[1] / self._num_group
 
         top_grad_reshaped = out_grad[0].reshape((input_shape[0], n, self._num_group, input_shape[-2], input_shape[-1]))
-        transposed_reshaped_grad = transpose(top_grad_reshaped, axes=(0, 2, 1, 3, 4))
+        transposed_reshaped_grad = mx.nd.transpose(top_grad_reshaped, axes=(0, 2, 1, 3, 4))
         bottom_grad = transposed_reshaped_grad.reshape(input_shape)
 
         self.assign(in_grad[0], req[0], bottom_grad)
@@ -51,10 +51,10 @@ class ShuffleChannelProp(mx.operator.CustomOpProp):
         self._num_group = num_group
 
     def list_arguments(self):
-        return ['input_data']
+        return ['data']
 
     def list_outputs(self):
-        return ['shuffled_data']
+        return ['output']
 
     def infer_shape(self, in_shape):
         input_shape = in_shape[0]
