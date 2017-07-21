@@ -22,7 +22,7 @@ def depthwise_conv(data, num_filter, kernel, stride, pad, no_bias, workspace, na
     
     
 
-def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom=0.9, workspace=512, memonger):
+def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom=0.9, workspace=512, memonger=True):
     """Return Shufflenet Unit symbol for building ResNet
     Parameters
     ----------
