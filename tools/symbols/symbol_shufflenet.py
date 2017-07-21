@@ -33,6 +33,7 @@ def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom
 
     # shuffle channels
     sc1 = mx.symbol.Custom(data=conv1, name='shufflechannel', op_type='shufflechannel', num_group=num_group)
+    
     bn2 = mx.sym.BatchNorm(data=sc1, fix_gamma=False, eps=2e-5, momentum=bn_mom, name=name + '_bn2')
     act2 = mx.sym.Activation(data=bn2, act_type='relu', name=name + '_relu2')
 
@@ -42,7 +43,7 @@ def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom
     #                                 no_bias=True, workspace=workspace, name=name + '_conv2')
 
     # Depthwise Conv, method 2: using channel slice
-    sc1_channels = mx.sym.split(data=act2, axis=1, num_outputs=int(num_filter*0.25))
+    sc1_channels = mx.sym.SliceChannel(data=act2, axis=1, num_outputs=int(num_filter*0.25))
     dw_outs = [mx.sym.Convolution(data=sc1_channels[i], num_filter=1, pad=(1, 1), kernel=(3, 3), stride=stride, 
              no_bias=True, workspace=workspace, name=name+'_conv2_depthwise_kernel'+str(i)) for i in range(int(num_filter*0.25))]
 
