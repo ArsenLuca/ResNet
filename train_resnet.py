@@ -1,6 +1,6 @@
 import argparse,logging,os
 import mxnet as mx
-from symbol_resnet import resnet
+from tools.symbols.symbol_resnet import resnet
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

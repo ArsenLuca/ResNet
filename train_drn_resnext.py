@@ -1,6 +1,6 @@
 import argparse,logging,os
 import mxnet as mx
-from symbol_drn_resnext import drn_resnext
+from tools.symbols.symbol_drn_resnext import drn_resnext
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
