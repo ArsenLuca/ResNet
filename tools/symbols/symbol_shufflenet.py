@@ -36,7 +36,7 @@ def shufflenet_unit(data, num_filter, stride, dim_match, name, num_group, bn_mom
 
     bn2 = mx.sym.BatchNorm(data=sc1, fix_gamma=False, eps=2e-5, momentum=bn_mom, name=name + '_bn2')
     act2 = mx.sym.Activation(data=bn2, act_type='relu', name=name + '_relu2')
-    conv2 = mx.sym.Convolution(data=act2, num_filter=int(num_filter*0.25), num_group=num_group, kernel=(3,3), stride=stride, pad=(1,1),
+    conv2 = mx.sym.Convolution(data=act2, num_filter=int(num_filter*0.25), num_group=int(num_filter*0.25), kernel=(3,3), stride=stride, pad=(1,1),
                                     no_bias=True, workspace=workspace, name=name + '_conv2')
     bn3 = mx.sym.BatchNorm(data=conv2, fix_gamma=False, eps=2e-5, momentum=bn_mom, name=name + '_bn3')
     act3 = mx.sym.Activation(data=bn3, act_type='relu', name=name + '_relu3')
